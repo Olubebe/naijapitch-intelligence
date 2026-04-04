@@ -18,6 +18,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import FeedbackForm from '../components/FeedbackForm';
+import Seo from '../components/Seo';
 import { authClient } from '../lib/auth';
 
 const heroPillars = [
@@ -72,6 +73,29 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-[#071c18] text-white">
+      <Seo
+        title={matchInfo
+          ? `${matchInfo.club_name} vs ${matchInfo.opponent} Feedback | NaijaPitch Intelligence`
+          : 'NaijaPitch Intelligence | Football Fan Insight and Match Sentiment'}
+        description={matchInfo
+          ? `Share supporter feedback for ${matchInfo.club_name} vs ${matchInfo.opponent}. Capture football sentiment, sportsmanship concerns, and community voice in one place.`
+          : 'NaijaPitch Intelligence transforms football supporter feedback into structured sentiment, match insight, sportsmanship reporting, and community intelligence for clubs and analysts.'}
+        keywords={[
+          'football fan feedback',
+          'match sentiment',
+          'sportsmanship analysis',
+          'club community insight',
+          'football supporter platform',
+          'Nigerian football',
+        ]}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'NaijaPitch Intelligence',
+          url: typeof window !== 'undefined' ? window.location.origin : '',
+          description: 'A football intelligence platform that transforms supporter feedback into match sentiment, sportsmanship insight, and community reporting.',
+        }}
+      />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(165,255,75,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(86,255,197,0.12),_transparent_20%),linear-gradient(180deg,_#0a2a23_0%,_#071c18_48%,_#061512_100%)]" />
 
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#061713]/80 backdrop-blur-xl">

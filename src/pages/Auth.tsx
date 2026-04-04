@@ -2,6 +2,7 @@ import React from 'react';
 import { AuthView } from '@neondatabase/neon-js/auth/react/ui';
 import { Link, useLocation } from 'react-router-dom';
 import { Trophy, ArrowLeft } from 'lucide-react';
+import Seo from '../components/Seo';
 
 function resolveAuthPath(pathname: string) {
     const slug = pathname.split('/').filter(Boolean).pop() || 'signin';
@@ -26,9 +27,23 @@ function resolveAuthPath(pathname: string) {
 export function Auth() {
     const location = useLocation();
     const authPath = resolveAuthPath(location.pathname);
+    const authTitleMap: Record<string, string> = {
+        'sign-in': 'Sign In',
+        'sign-up': 'Create Account',
+        'forgot-password': 'Forgot Password',
+        'recover-account': 'Recover Account',
+        'reset-password': 'Reset Password',
+        callback: 'Authentication Callback',
+    };
+    const pageTitle = authTitleMap[authPath] || 'Member Access';
 
     return (
         <div className="min-h-screen bg-[#F8FBF9] flex flex-col">
+            <Seo
+                title={`${pageTitle} | NaijaPitch Intelligence`}
+                description="Secure account access for supporters, club officials, and analysts using NaijaPitch Intelligence."
+                noindex
+            />
             <header className="p-6">
                 <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-green-700 font-semibold transition-colors">
                     <ArrowLeft className="w-4 h-4" />

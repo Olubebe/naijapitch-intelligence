@@ -2,10 +2,16 @@ import React from 'react';
 import { AccountView, SignedIn, SignedOut } from '@neondatabase/neon-js/auth/react/ui';
 import { Trophy, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Seo from '../components/Seo';
 
 export function Account() {
     return (
         <div className="min-h-screen bg-gray-50">
+            <Seo
+                title="Account Settings | NaijaPitch Intelligence"
+                description="Manage your NaijaPitch Intelligence account settings and authentication details."
+                noindex
+            />
             <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">

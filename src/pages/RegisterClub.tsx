@@ -6,6 +6,7 @@ import { Trophy, Building2, ShieldCheck, Upload, ArrowRight, CheckCircle2, LogOu
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SignedIn, UserButton } from '@neondatabase/neon-js/auth/react/ui';
+import Seo from '../components/Seo';
 
 export function RegisterClub() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -147,6 +148,11 @@ export function RegisterClub() {
 
   return (
     <div className="min-h-screen bg-[#F8FBF9]">
+      <Seo
+        title="Register Your Club | NaijaPitch Intelligence"
+        description="Register your football club for admin review, community feedback campaigns, and supporter intelligence workflows."
+        noindex
+      />
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">

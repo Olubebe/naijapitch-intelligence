@@ -9,6 +9,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { authClient, getAuthToken } from '../lib/auth';
+import Seo from '../components/Seo';
 
 export function Admin() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -315,6 +316,11 @@ export function Admin() {
 
   return (
     <div className="min-h-screen bg-[#F8FBF9]">
+      <Seo
+        title="Admin Dashboard | NaijaPitch Intelligence"
+        description="Private club dashboard for fan feedback analysis, shareable match links, user moderation, and club intelligence."
+        noindex
+      />
       <SignedIn>
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
