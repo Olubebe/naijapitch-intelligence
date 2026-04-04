@@ -589,6 +589,296 @@ async function sendDigestEmail(params: {
   return { sent: true, id: payload.id as string | undefined };
 }
 
+function safeNumber(value: unknown, fallback = 0) {
+  const next = Number(value);
+  return Number.isFinite(next) ? next : fallback;
+}
+
+function summarizeFanSentiment(lines: string[]) {
+  const positiveWords = ['clinical', 'excellent', 'sharp', 'brilliant', 'calm', 'dominant', 'great', 'solid'];
+  const negativeWords = ['nervous', 'lazy', 'poor', 'terrible', 'slow', 'open', 'weak', 'bad', 'panic', 'exposed'];
+
+  let score = 0;
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    for (const word of positiveWords) {
+      if (lower.includes(word)) score += 1;
+    }
+    for (const word of negativeWords) {
+      if (lower.includes(word)) score -= 1;
+    }
+  }
+
+  const normalized = lines.length ? clamp(score / Math.max(lines.length * 2, 1), -1, 1) : 0;
+  return {
+    score: normalized,
+    label: normalized >= 0.2 ? 'Positive' : normalized <= -0.2 ? 'Negative' : 'Mixed',
+  };
+}
+
+function inferFailureStates(stats: any, fanFeedback: string[]) {
+  const failures: Array<{ key: string; label: string; reason: string; solution: string }> = [];
+  const lowerFeedback = fanFeedback.join(' ').toLowerCase();
+  const passAccuracy = safeNumber(stats?.passCompletion?.team);
+  const xgAgainst = safeNumber(stats?.xg?.against);
+  const xgFor = safeNumber(stats?.xg?.for);
+  const heatmapsText = `${stats?.heatmaps?.team || ''} ${stats?.heatmaps?.opponent || ''}`.toLowerCase();
+
+  if (lowerFeedback.includes('nervous playing from the back') || lowerFeedback.includes('distribution') || passAccuracy < 82) {
+    failures.push({
+      key: 'build_up_risk',
+      label: 'Build-up instability under pressure',
+      reason: 'Fan comments point to discomfort in goalkeeper or first-phase distribution, and the passing base was not secure enough.',
+      solution: 'Implement a safer first-phase build-up pattern with a rest-defense triangle and one-touch exit options around the goalkeeper.',
+    });
+  }
+
+  if (lowerFeedback.includes('late') || lowerFeedback.includes('95th') || heatmapsText.includes('late') || xgAgainst > 1.5) {
+    failures.push({
+      key: 'late_game_control',
+      label: 'Late-game control failure',
+      reason: 'The match profile suggests control dropped late, leaving space for counters or chaotic defending in the closing phase.',
+      solution: 'Implement staggered rest-defense and late-game game-state drills to protect central transitions after turnovers.',
+    });
+  }
+
+  if (xgFor < xgAgainst) {
+    failures.push({
+      key: 'chance_creation_gap',
+      label: 'Chance creation below opponent level',
+      reason: 'The team generated less expected threat than the opponent, which suggests attacking structure or shot quality issues.',
+      solution: 'Drill a midfield double pivot into final-third release patterns to improve stable access into high-value shooting zones.',
+    });
+  }
+
+  if (failures.length === 0) {
+    failures.push({
+      key: 'system_variance',
+      label: 'Individual moments covering system variance',
+      reason: 'The data and fan voice suggest the result relied more on moments than repeatable control.',
+      solution: 'Reinforce controlled possession and counter-press triggers so the team can repeat positive match states more consistently.',
+    });
+  }
+
+  return failures.slice(0, 3);
+}
+
+function buildPerceptionGaps(stats: any, fanFeedback: string[]) {
+  const playerKpis = Array.isArray(stats?.playerKpis) ? stats.playerKpis : [];
+  const gaps: Array<{ playerOrTheme: string; explanation: string }> = [];
+
+  for (const player of playerKpis) {
+    const playerName = String(player.player || '');
+    const lowerName = playerName.toLowerCase();
+    const relatedFeedback = fanFeedback.filter((line) => line.toLowerCase().includes(lowerName));
+    if (relatedFeedback.length === 0) continue;
+
+    const km = safeNumber(player.distanceKm, -1);
+    const passAccuracy = safeNumber(player.passAccuracy, -1);
+    const feedbackBlob = relatedFeedback.join(' ').toLowerCase();
+
+    if (feedbackBlob.includes('lazy') && km >= 11) {
+      gaps.push({
+        playerOrTheme: playerName,
+        explanation: `${playerName} was criticized for looking lazy, but the underlying data shows ${km.toFixed(1)}km covered. This is a perception gap between body language and actual physical output.`,
+      });
+    }
+
+    if ((feedbackBlob.includes('nervous') || feedbackBlob.includes('panic')) && passAccuracy >= 85) {
+      gaps.push({
+        playerOrTheme: playerName,
+        explanation: `${playerName} was perceived as shaky, but the data shows ${passAccuracy.toFixed(0)}% pass accuracy. The issue may be aesthetic or game-state driven rather than purely technical output.`,
+      });
+    }
+  }
+
+  return gaps.slice(0, 4);
+}
+
+function buildHybridFeedbackReport(structuredStats: any, fanFeedback: string[]) {
+  const xgFor = safeNumber(structuredStats?.xg?.for);
+  const xgAgainst = safeNumber(structuredStats?.xg?.against);
+  const xgDiff = xgFor - xgAgainst;
+  const passAccuracy = safeNumber(structuredStats?.passCompletion?.team);
+  const fanSentiment = summarizeFanSentiment(fanFeedback);
+  const matchQualityScore = Math.round(clamp(55 + xgDiff * 12 + (passAccuracy - 80) * 1.5 + fanSentiment.score * 15, 0, 100));
+  const failureStates = inferFailureStates(structuredStats, fanFeedback);
+  const perceptionGaps = buildPerceptionGaps(structuredStats, fanFeedback);
+
+  const statusHeader =
+    xgDiff > 0.4 && fanSentiment.score > 0.2
+      ? 'Result: Positive - Strong Process Backed by Positive Fan Voice'
+      : xgDiff < -0.3 && fanSentiment.score < -0.2
+        ? 'Result: Negative - Performance and Fan Reaction Aligned Around Weak Control'
+        : 'Result: Mixed-Positive - Individual Brilliance over System Control';
+
+  const why = [
+    `The data stream shows xG at ${xgFor.toFixed(2)} for versus ${xgAgainst.toFixed(2)} against, with team pass completion at ${passAccuracy.toFixed(0)}%.`,
+    `Fan sentiment trends ${fanSentiment.label.toLowerCase()}, with comments focusing on ${failureStates.map((item) => item.label.toLowerCase()).join(', ')}.`,
+    perceptionGaps.length > 0
+      ? `There are ${perceptionGaps.length} perception gap(s) where fan interpretation differs from the measurable data.`
+      : 'Fan interpretation is broadly aligned with the statistical picture from the match.',
+    `Ref: Statistical Breakdown and Fan Report were synthesized into one coaching summary.`,
+  ].join(' ');
+
+  const painPoints = failureStates.map((item) => ({
+    title: item.label,
+    reason: item.reason,
+  }));
+
+  const tacticalFixes = failureStates.map((item) => item.solution);
+  const communicationFixes = [
+    'Address the highest-volume fan concern directly in the post-match communication pack.',
+    'Separate emotional reactions from measurable player output when explaining selection or substitution decisions.',
+    'Provide a clearer public explanation for the match-state plan if late-game control became an issue.',
+  ];
+
+  const questionsForStrategy = [
+    'Which problem in this match was structural, and which problem only looked structural because of fan emotion?',
+    'If the same game state happens again in the final 15 minutes, what is the coaching staff’s default control mechanism?',
+    'Which player roles created the biggest perception gap between visible body language and actual data output?',
+    'What one tactical adjustment would most improve both performance quality and supporter confidence in the next match?',
+  ];
+
+  return {
+    statusHeader,
+    why,
+    painPoints,
+    perceptionGaps,
+    actionItems: {
+      tacticalFixes,
+      communicationFixes,
+    },
+    questionsForStrategy,
+    metrics: {
+      fanSentimentLabel: fanSentiment.label,
+      fanSentimentScore: fanSentiment.score,
+      matchQualityScore,
+      xgDiff: Number(xgDiff.toFixed(2)),
+    },
+  };
+}
+
+function splitMatchTeams(subject: string, fallbackClubName: string) {
+  const normalized = sanitizeText(subject, 160);
+  const matchParts = normalized.split(/\s+vs\s+|\s+v\s+/i).map((part) => sanitizeText(part, 80)).filter(Boolean);
+  if (matchParts.length >= 2) {
+    return {
+      primaryTeam: matchParts[0],
+      secondaryTeam: matchParts[1],
+    };
+  }
+
+  return {
+    primaryTeam: fallbackClubName || normalized || 'The team',
+    secondaryTeam: 'the opposition',
+  };
+}
+
+function buildNarrativeHybridReport(match: any, rows: any[]) {
+  const total = rows.length;
+  const avgSentiment = total
+    ? rows.reduce((sum, row) => sum + safeNumber(row.sentiment_score), 0) / total
+    : 0;
+  const avgMagnitude = total
+    ? rows.reduce((sum, row) => sum + safeNumber(row.magnitude), 0) / total
+    : 0;
+  const avgCredibility = total
+    ? rows.reduce((sum, row) => sum + safeNumber(row.credibility_score), 0) / total
+    : 0;
+
+  const sortedPositive = [...rows]
+    .filter((row) => safeNumber(row.sentiment_score) >= 0.2)
+    .sort((a, b) => safeNumber(b.sentiment_score) - safeNumber(a.sentiment_score))
+    .slice(0, 2);
+  const sortedNegative = [...rows]
+    .filter((row) => safeNumber(row.sentiment_score) <= -0.2)
+    .sort((a, b) => safeNumber(a.sentiment_score) - safeNumber(b.sentiment_score))
+    .slice(0, 2);
+  const loudestRows = [...rows]
+    .sort((a, b) => safeNumber(b.magnitude) - safeNumber(a.magnitude))
+    .slice(0, 3);
+
+  const { primaryTeam, secondaryTeam } = splitMatchTeams(match.opponent || '', match.club_name || '');
+  const statusHeader =
+    avgSentiment >= 0.25
+      ? `Result: Positive - ${primaryTeam} generated strong supporter confidence`
+      : avgSentiment <= -0.2
+        ? `Result: Negative - ${primaryTeam} triggered more concern than control`
+        : `Result: Mixed-Positive - Individual Brilliance over System Control`;
+
+  const positiveQuote = sortedPositive[0]
+    ? `"${sanitizeText(sortedPositive[0].translated_text || sortedPositive[0].original_text, 180)}"`
+    : `"Supporters still saw encouraging moments in key phases of play."`;
+  const negativeQuote = sortedNegative[0]
+    ? `"${sanitizeText(sortedNegative[0].translated_text || sortedNegative[0].original_text, 180)}"`
+    : `"Supporters felt the structure wobbled when the game became chaotic."`;
+  const emotionalLine = loudestRows[0]
+    ? `"${sanitizeText(loudestRows[0].translated_text || loudestRows[0].original_text, 200)}"`
+    : `"Supporters reacted most strongly to the late-game moments and game-state swings."`;
+
+  const why = [
+    `The feedback indicates that ${primaryTeam}'s performance was judged more through emotional match control than through a single result line.`,
+    `The Positive: Fans repeatedly highlighted ${positiveQuote} (Ref: Fan Report), and the average Google Cloud sentiment score landed at ${avgSentiment.toFixed(2)} with an emotional intensity of ${avgMagnitude.toFixed(2)} (Ref: Sentiment Analysis).`,
+    `The Negative: The same feedback pool shows that supporters were uneasy with match control, especially in stressful phases, captured by ${negativeQuote} (Ref: Fan Report).`,
+    `The ${secondaryTeam} Perspective: Even when the opponent was respected or seen as dangerous, the comments suggest the match was felt as unstable rather than fully managed, with the loudest reaction captured by ${emotionalLine} (Ref: Sentiment Magnitude).`,
+    `Collated Summary: ${total} feedback entry/entries were analyzed, with average credibility at ${(avgCredibility * 100).toFixed(0)}%, so the overall view is a supporter-weighted match narrative rather than a single isolated opinion.`,
+  ].join('\n\n');
+
+  const tacticalFixes = [
+    `For ${primaryTeam}: "Kill the Chaos"`,
+    `${primaryTeam} should improve its control structure in unstable phases by reinforcing the midfield screen and protecting central transitions when the match becomes stretched.`,
+    `Late-game pressure management needs a relief pattern. Instead of inviting panic, the team should have a clear escape route when pressed, such as direct diagonals or a pre-planned outlet runner.`,
+    `For ${secondaryTeam}: "Turn Pressure into Punishment"`,
+    `${secondaryTeam} must convert good periods into decisive moments by improving shot quality, final-third decision-making, or transition protection depending on the feedback pattern collected from supporters.`,
+  ];
+
+  const communicationFixes = [
+    `Address supporter anxiety directly around the most emotional phase of the match, especially if the Google Cloud magnitude score stayed high despite mixed sentiment.`,
+    `Explain whether the team was intentionally protecting the lead or whether control was genuinely lost, so fans understand the match-state choices.`,
+    `Use player-specific communication carefully when supporters target one individual; separate role design from individual blame.`,
+  ];
+
+  const questionsForStrategy = [
+    `For ${primaryTeam}: did the team control the match in a repeatable way, or did it survive key moments through individual composure?`,
+    `For ${secondaryTeam}: if supporters felt the opponent looked vulnerable, what prevented that pressure from becoming a decisive tactical advantage?`,
+    `Which moment generated the strongest emotional spike in the feedback, and what structural issue made that moment feel bigger than it should have?`,
+    `If the same game-state appears next week, what one tactical adjustment would reduce supporter panic while also improving actual control?`,
+  ];
+
+  const painPoints = [
+    {
+      title: 'Game-State Control',
+      reason: `Supporters did not describe the match as fully controlled. The average sentiment was ${avgSentiment.toFixed(2)}, but the emotional intensity was ${avgMagnitude.toFixed(2)}, which suggests fans felt the game was stressful even when the final feeling was not entirely negative.`,
+    },
+    {
+      title: 'Late-Phase Stability',
+      reason: sortedNegative.length > 0
+        ? `Negative feedback clustered around tense moments, with the sharpest complaint being ${negativeQuote}.`
+        : 'Even without strongly negative comments, the supporter tone suggests concern around how the team handled pressure moments.',
+    },
+  ];
+
+  return {
+    statusHeader,
+    why,
+    painPoints,
+    perceptionGaps: [],
+    actionItems: {
+      tacticalFixes,
+      communicationFixes,
+    },
+    questionsForStrategy,
+    metrics: {
+      fanSentimentLabel: avgSentiment >= 0.2 ? 'Positive' : avgSentiment <= -0.2 ? 'Negative' : 'Mixed',
+      fanSentimentScore: Number(avgSentiment.toFixed(2)),
+      matchQualityScore: Math.round(clamp(60 + avgSentiment * 20 + avgCredibility * 20, 0, 100)),
+      avgMagnitude: Number(avgMagnitude.toFixed(2)),
+      responseCount: total,
+    },
+  };
+}
+
 async function postGoogleCloudJson<T>(url: string, body: Record<string, unknown>) {
   if (!googleCloudApiKey) {
     throw new Error('GOOGLE_CLOUD_API_KEY is not configured.');
@@ -1772,6 +2062,57 @@ app.get('/api/admin/links', authenticate, async (req, res) => {
   }
 });
 
+app.get('/api/admin/links/:sharableId/feedback', authenticate, async (req, res) => {
+  const adminUser = await requireRole(req, res, ['ADMIN', 'SUPER_ADMIN']);
+  if (!adminUser) return;
+
+  const sharableId = sanitizeText(req.params.sharableId, 120);
+  if (!sharableId) {
+    return res.status(400).json({ error: 'Sharable ID required.' });
+  }
+
+  try {
+    const matches = await sql`
+      SELECT m.*, c.name AS club_name, c.admin_email
+      FROM matches m
+      JOIN clubs c ON c.id = m.club_id
+      WHERE m.sharable_id = ${sharableId}
+      LIMIT 1
+    `;
+
+    if (matches.length === 0) {
+      return res.status(404).json({ error: 'Sharable link not found.' });
+    }
+
+    const match = matches[0];
+    if (adminUser.role !== 'SUPER_ADMIN' && adminUser.club_id !== match.club_id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const feedbackRows = await sql`
+      SELECT id, original_text, translated_text, sentiment_score, credibility_score, timestamp
+      FROM feedback
+      WHERE match_id = ${match.id}
+      ORDER BY timestamp DESC
+    `;
+
+    res.json({
+      match: {
+        sharableId: match.sharable_id,
+        opponent: match.opponent,
+        topicType: match.topic_type,
+        subheading: match.subheading,
+        clubName: match.club_name,
+        adminEmail: match.admin_email,
+      },
+      feedback: feedbackRows,
+    });
+  } catch (error) {
+    console.error('Failed to fetch shareable link feedback:', error);
+    res.status(500).json({ error: 'Failed to fetch link feedback.' });
+  }
+});
+
 app.post('/api/admin/feedback/backfill-analysis', authenticate, async (req, res) => {
   const adminUser = await requireRole(req, res, ['ADMIN', 'SUPER_ADMIN']);
   if (!adminUser) return;
@@ -1870,6 +2211,149 @@ app.post('/api/admin/links/:sharableId/summary', authenticate, async (req, res) 
     console.error('Failed to build shareable link digest:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to generate link summary.',
+    });
+  }
+});
+
+app.post('/api/admin/hybrid-report', authenticate, async (req, res) => {
+  const adminUser = await requireRole(req, res, ['ADMIN', 'SUPER_ADMIN']);
+  if (!adminUser) return;
+
+  const clubId = sanitizeText(req.body.clubId, 120);
+  const sharableId = sanitizeText(req.body.sharableId, 120);
+
+  if (!clubId) {
+    return res.status(400).json({ error: 'Club ID required.' });
+  }
+
+  if (adminUser.role !== 'SUPER_ADMIN' && adminUser.club_id !== clubId) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  if (!sharableId) {
+    return res.status(400).json({ error: 'Sharable link is required.' });
+  }
+
+  try {
+    const matches = await sql`
+      SELECT m.*, c.name AS club_name, c.admin_email
+      FROM matches m
+      JOIN clubs c ON c.id = m.club_id
+      WHERE m.sharable_id = ${sharableId}
+      LIMIT 1
+    `;
+
+    if (matches.length === 0) {
+      return res.status(404).json({ error: 'Sharable link not found.' });
+    }
+
+    const match = matches[0];
+    if (adminUser.role !== 'SUPER_ADMIN' && adminUser.club_id !== match.club_id) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const feedbackRows = await sql`
+      SELECT *
+      FROM feedback
+      WHERE match_id = ${match.id}
+      ORDER BY timestamp DESC
+    `;
+
+    if (feedbackRows.length === 0) {
+      return res.status(400).json({ error: 'No feedback has been collected for this sharable link yet.' });
+    }
+
+    const report = buildNarrativeHybridReport(match, feedbackRows as any[]);
+    res.json(report);
+  } catch (error) {
+    console.error('Hybrid report generation failed:', error);
+    res.status(500).json({ error: 'Failed to generate hybrid feedback report.' });
+  }
+});
+
+app.post('/api/admin/hybrid-report/email', authenticate, async (req, res) => {
+  const adminUser = await requireRole(req, res, ['ADMIN', 'SUPER_ADMIN']);
+  if (!adminUser) return;
+
+  const clubId = sanitizeText(req.body.clubId, 120);
+  const report = req.body.report;
+  const emailTo = sanitizeText(req.body.emailTo, 255).toLowerCase();
+
+  if (!clubId) {
+    return res.status(400).json({ error: 'Club ID required.' });
+  }
+
+  if (adminUser.role !== 'SUPER_ADMIN' && adminUser.club_id !== clubId) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  if (!report || typeof report !== 'object') {
+    return res.status(400).json({ error: 'Hybrid report payload is required.' });
+  }
+
+  try {
+    const clubs = await sql`SELECT name, admin_email FROM clubs WHERE id = ${clubId} LIMIT 1`;
+    if (clubs.length === 0) {
+      return res.status(404).json({ error: 'Club not found.' });
+    }
+
+    const club = clubs[0];
+    const recipient = emailTo || sanitizeText(club.admin_email, 255).toLowerCase();
+    if (!recipient) {
+      return res.status(400).json({ error: 'No club admin email is configured for this report.' });
+    }
+
+    const subject = `Hybrid Feedback Report: ${sanitizeText(report.statusHeader, 160) || club.name}`;
+    const text = [
+      subject,
+      '',
+      `Why: ${report.why || ''}`,
+      '',
+      'Pain Points:',
+      ...((report.painPoints || []).map((item: any) => `- ${item.title}: ${item.reason}`)),
+      '',
+      'Tactical Fixes:',
+      ...((report.actionItems?.tacticalFixes || []).map((item: string) => `- ${item}`)),
+      '',
+      'Communication Fixes:',
+      ...((report.actionItems?.communicationFixes || []).map((item: string) => `- ${item}`)),
+      '',
+      'Questions for Strategy:',
+      ...((report.questionsForStrategy || []).map((item: string, index: number) => `${index + 1}. ${item}`)),
+    ].join('\n');
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+        <h2>${subject}</h2>
+        <p><strong>The Why:</strong> ${report.why || ''}</p>
+        <h3>Pain Points</h3>
+        <ul>${(report.painPoints || []).map((item: any) => `<li><strong>${item.title}</strong>: ${item.reason}</li>`).join('')}</ul>
+        <h3>Tactical Fixes</h3>
+        <ul>${(report.actionItems?.tacticalFixes || []).map((item: string) => `<li>${item}</li>`).join('')}</ul>
+        <h3>Communication Fixes</h3>
+        <ul>${(report.actionItems?.communicationFixes || []).map((item: string) => `<li>${item}</li>`).join('')}</ul>
+        <h3>Questions for Strategy</h3>
+        <ol>${(report.questionsForStrategy || []).map((item: string) => `<li>${item}</li>`).join('')}</ol>
+      </div>
+    `;
+
+    const emailResult = await sendDigestEmail({
+      to: recipient,
+      subject,
+      html,
+      text,
+    });
+
+    res.json({
+      emailSent: emailResult.sent,
+      emailReason: emailResult.reason || null,
+      emailId: emailResult.id || null,
+      recipient,
+    });
+  } catch (error) {
+    console.error('Failed to send hybrid report email:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to send hybrid report email.',
     });
   }
 });

@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/react/ui';
 import { useAuthData } from '@neondatabase/neon-js/auth/react';
 import AdminDashboard from '../components/AdminDashboard';
+import HybridFeedbackReportBuilder from '../components/HybridFeedbackReportBuilder';
 import { Trophy, LogOut, LayoutDashboard, Plus, Link as LinkIcon, Copy, Check, Users, Ban, ArrowRight, CheckCircle2, Image as ImageIcon, Mail, FileText, X } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -432,6 +433,12 @@ export function Admin() {
             activeView === 'dashboard' ? (
               <div className="space-y-8">
                 <AdminDashboard data={feedback} onBlockUser={handleBlockUser} />
+                <HybridFeedbackReportBuilder
+                  clubId={clubId}
+                  adminEmail={userData?.email || null}
+                  shareLinks={sortedShareLinks}
+                  getToken={getToken}
+                />
                 <div className="bg-white rounded-3xl shadow-xl shadow-green-900/5 border border-gray-100 overflow-hidden">
                   <div className="p-8 border-b border-gray-100">
                     <h3 className="text-xl font-bold text-gray-900">Shareable Link Digests</h3>

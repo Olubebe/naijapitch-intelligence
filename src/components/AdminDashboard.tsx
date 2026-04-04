@@ -56,6 +56,56 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
     return 'Low';
   };
 
+  const exportCsv = () => {
+    const headers = [
+      'timestamp',
+      'status',
+      'category',
+      'focus_area',
+      'subject',
+      'owner_club',
+      'primary_subject_club',
+      'cross_club',
+      'sentiment_score',
+      'magnitude',
+      'credibility_score',
+      'user_type',
+      'user_email',
+      'feedback',
+      'quality_flags',
+    ];
+
+    const escapeCell = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const rows = filteredData.map((item) => [
+      item.timestamp,
+      item.validation_status,
+      item.category,
+      item.subheading || 'General',
+      item.opponent,
+      item.owner_club_name || item.owner_club_id || '',
+      item.primary_subject_club_name || item.primary_subject_club || '',
+      item.is_cross_club_feedback ? 'Yes' : 'No',
+      item.sentiment_score,
+      item.magnitude,
+      item.credibility_score,
+      item.is_anonymous ? 'Anonymous' : 'Authenticated',
+      item.user_email || '',
+      item.translated_text || item.original_text || '',
+      Array.isArray(item.quality_flags) ? item.quality_flags.join('; ') : '',
+    ]);
+
+    const csv = [headers, ...rows].map((row) => row.map(escapeCell).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `fan-feedback-${activeTab.toLowerCase()}-${activeFocus.toLowerCase().replace(/\s+/g, '-')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Stats Overview */}
@@ -140,9 +190,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <div>
             <h3 className="text-lg font-bold text-gray-800">Fan Insights: {activeTab}</h3>
-            <p className="text-sm text-gray-500">Focus area: {activeFocus} · Scope: {activeClubScope}</p>
+            <p className="text-sm text-gray-500">Focus area: {activeFocus} | Scope: {activeClubScope}</p>
           </div>
-          <button className="flex items-center gap-2 text-sm text-green-700 font-semibold hover:bg-green-50 px-3 py-1.5 rounded-lg transition-colors">
+          <button
+            onClick={exportCsv}
+            className="flex items-center gap-2 text-sm text-green-700 font-semibold hover:bg-green-50 px-3 py-1.5 rounded-lg transition-colors"
+          >
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
@@ -381,7 +434,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
                             key={`${entity.name}-${index}`}
                             className="inline-flex items-center rounded-full border border-green-100 bg-white px-3 py-1 text-xs font-semibold text-gray-700"
                           >
-                            {entity.name} • {entity.type}
+                            {entity.name} | {entity.type}
                           </span>
                         ))}
                       </div>
