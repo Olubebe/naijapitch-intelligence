@@ -1,7 +1,6 @@
 
 import crypto from 'node:crypto';
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
 import { neon } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -1207,6 +1206,25 @@ async function requireRole(
 app.use(cors());
 app.use(express.json({ limit: '4mb' }));
 
+let initPromise: Promise<void> | null = null;
+let errorHandlingRegistered = false;
+
+function registerErrorHandling() {
+  if (errorHandlingRegistered) return;
+
+  app.use((error: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (error?.type === 'entity.too.large') {
+      return res.status(413).json({
+        error: 'Upload is too large. Please choose a smaller image or shorter request payload.',
+      });
+    }
+
+    return next(error);
+  });
+
+  errorHandlingRegistered = true;
+}
+
 // Database Initialization
 async function initDb() {
   try {
@@ -1335,6 +1353,25 @@ async function initDb() {
     console.error('Database init failed:', err);
   }
 }
+
+function ensureInitialized() {
+  if (!initPromise) {
+    initPromise = initDb();
+  }
+
+  return initPromise;
+}
+
+registerErrorHandling();
+
+app.use(async (_req, _res, next) => {
+  try {
+    await ensureInitialized();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 // API Routes
 
@@ -2430,19 +2467,10 @@ app.post('/api/admin/links', rateLimit({
 
 // Vite middleware for development
 async function startServer() {
-  await initDb();
-
-  app.use((error: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (error?.type === 'entity.too.large') {
-      return res.status(413).json({
-        error: 'Upload is too large. Please choose a smaller image or shorter request payload.',
-      });
-    }
-
-    return next(error);
-  });
+  await ensureInitialized();
 
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
@@ -2455,4 +2483,8 @@ async function startServer() {
   });
 }
 
-startServer();
+export default app;
+
+if (!process.env.VERCEL) {
+  startServer();
+}
