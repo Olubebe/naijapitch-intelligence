@@ -4,7 +4,7 @@ import { SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/reac
 import { useAuthData } from '@neondatabase/neon-js/auth/react';
 import AdminDashboard from '../components/AdminDashboard';
 import HybridFeedbackReportBuilder from '../components/HybridFeedbackReportBuilder';
-import { Trophy, LogOut, LayoutDashboard, Plus, Link as LinkIcon, Copy, Check, Users, Ban, ArrowRight, CheckCircle2, Image as ImageIcon, Mail, FileText, X } from 'lucide-react';
+import { Trophy, LogOut, LayoutDashboard, Plus, Link as LinkIcon, Copy, Check, Users, Ban, ArrowRight, CheckCircle2, Image as ImageIcon, Mail, FileText, X, Menu } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -31,6 +31,7 @@ export function Admin() {
   const [shareLinks, setShareLinks] = useState<any[]>([]);
   const [selectedDigest, setSelectedDigest] = useState<any | null>(null);
   const [isSendingDigest, setIsSendingDigest] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getToken = () => getAuthToken(session);
 
@@ -317,15 +318,15 @@ export function Admin() {
       <SignedIn>
         <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
+            <div className="flex justify-between items-center h-16 gap-4">
               <div className="flex items-center gap-2">
                 {clubBadge}
-                <span className="text-xl font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
+                <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
                   NaijaPitch Intelligence
                 </span>
               </div>
               
-              <div className="flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-4">
                 <Link to="/" className="text-sm font-semibold text-gray-500 hover:text-green-600 transition-all">
                   Fan Portal
                 </Link>
@@ -349,15 +350,54 @@ export function Admin() {
                   </Link>
                 </SignedOut>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((current) => !current)}
+                className="inline-flex md:hidden items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 p-2.5 text-gray-700"
+                aria-label={mobileMenuOpen ? 'Close admin menu' : 'Open admin menu'}
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
+
+            {mobileMenuOpen && (
+              <div className="md:hidden pb-4 animate-fade-up">
+                <div className="rounded-3xl border border-gray-100 bg-gray-50 p-3 shadow-sm">
+                  <div className="grid gap-2">
+                    <Link
+                      to="/"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-700"
+                    >
+                      Fan Portal
+                    </Link>
+                    <button
+                      onClick={() => authClient.signOut().then(() => {
+                        setMobileMenuOpen(false);
+                        window.location.href = '/';
+                      })}
+                      className="flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-gray-700"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                    <div className="flex justify-center pt-2">
+                      <UserButton />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-12">
             <div>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight">Intelligence Hub</h1>
-              <div className="flex items-center gap-3 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Intelligence Hub</h1>
+              <div className="flex items-center gap-3 mt-2">
                 {userData?.logo_url ? (
                   <img
                     src={userData.logo_url}
@@ -373,55 +413,57 @@ export function Admin() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="flex p-1 bg-gray-100 rounded-xl">
+            <div className="w-full xl:w-auto flex flex-col lg:flex-row lg:items-center gap-3">
+              <div className="flex flex-wrap p-1 bg-gray-100 rounded-xl w-full lg:w-auto">
                 <button 
                   onClick={() => setActiveView('dashboard')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'dashboard' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 lg:flex-none justify-center flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'dashboard' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   <LayoutDashboard className="w-4 h-4" /> Dashboard
                 </button>
                 <button 
                   onClick={() => setActiveView('users')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'users' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 lg:flex-none justify-center flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'users' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   <Users className="w-4 h-4" /> User Control
                 </button>
                 {userData?.role === 'SUPER_ADMIN' && (
                   <button 
                     onClick={() => setActiveView('approvals')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'approvals' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 lg:flex-none justify-center flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeView === 'approvals' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   >
                     <CheckCircle2 className="w-4 h-4" /> Approvals
                   </button>
                 )}
               </div>
-              {userData?.role !== 'SUPER_ADMIN' && (
-                <>
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                {userData?.role !== 'SUPER_ADMIN' && (
+                  <>
                   <button
                     onClick={handleBackfillAnalysis}
                     disabled={isBackfilling || !clubId}
-                    className="flex items-center gap-2 bg-white text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-bold hover:bg-green-50 transition-all disabled:opacity-60"
+                    className="flex items-center justify-center gap-2 bg-white text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-bold hover:bg-green-50 transition-all disabled:opacity-60 w-full sm:w-auto"
                   >
                     <CheckCircle2 className="w-4 h-4" /> {isBackfilling ? 'Refreshing Analysis...' : 'Refresh Analysis'}
                   </button>
                   <button 
                     onClick={() => setShowLinkGen(true)}
-                    className="flex items-center gap-2 bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-800 transition-all shadow-xl shadow-green-100"
+                    className="flex items-center justify-center gap-2 bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-800 transition-all shadow-xl shadow-green-100 w-full sm:w-auto"
                   >
                     <Plus className="w-4 h-4" /> Generate Match Link
                   </button>
-                </>
-              )}
-              {userData?.role === 'SUPER_ADMIN' && activeView === 'dashboard' && (
-                <button
-                  onClick={handleBackfillAnalysis}
-                  disabled={isBackfilling || !clubId}
-                  className="flex items-center gap-2 bg-white text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-bold hover:bg-green-50 transition-all disabled:opacity-60"
-                >
-                  <CheckCircle2 className="w-4 h-4" /> {isBackfilling ? 'Refreshing Analysis...' : 'Refresh Analysis'}
-                </button>
-              )}
+                  </>
+                )}
+                {userData?.role === 'SUPER_ADMIN' && activeView === 'dashboard' && (
+                  <button
+                    onClick={handleBackfillAnalysis}
+                    disabled={isBackfilling || !clubId}
+                    className="flex items-center justify-center gap-2 bg-white text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-bold hover:bg-green-50 transition-all disabled:opacity-60 w-full sm:w-auto"
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> {isBackfilling ? 'Refreshing Analysis...' : 'Refresh Analysis'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -444,7 +486,7 @@ export function Admin() {
                     <h3 className="text-xl font-bold text-gray-900">Shareable Link Digests</h3>
                     <p className="text-gray-500 text-sm">Preview a collated report for any campaign link, then send it to the club admin email.</p>
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-widest">
                         <tr>
@@ -510,6 +552,61 @@ export function Admin() {
                         )}
                       </tbody>
                     </table>
+                  </div>
+                  <div className="md:hidden p-4 space-y-4">
+                    {sortedShareLinks.map((link) => (
+                      <div key={link.sharable_id} className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-3">
+                        <div>
+                          <div className="font-bold text-gray-900">{link.opponent}</div>
+                          <div className="text-xs text-gray-400">{link.sharable_id}</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Topic</div>
+                            <div className="mt-1 font-semibold text-gray-800">{link.topic_type}</div>
+                            <div className="text-xs text-amber-700">{link.subheading}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Responses</div>
+                            <div className="mt-1 font-bold text-gray-900">{link.feedback_count}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sentiment</div>
+                            <div className="mt-1 font-semibold text-gray-800">{link.avg_sentiment ? Number(link.avg_sentiment).toFixed(2) : '0.00'}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Credibility</div>
+                            <div className="mt-1 font-semibold text-gray-800">{link.avg_credibility ? `${(Number(link.avg_credibility) * 100).toFixed(0)}%` : '0%'}</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Expires: {link.expires_at ? new Date(link.expires_at).toLocaleString() : 'No expiry'}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => handleDigestAction(link.sharable_id, false)}
+                            disabled={!!isSendingDigest}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-green-200 px-4 py-2 text-xs font-bold text-green-700 hover:bg-green-50 disabled:opacity-60"
+                          >
+                            <FileText className="w-4 h-4" />
+                            {isSendingDigest === `${link.sharable_id}:preview` ? 'Loading...' : 'Preview Digest'}
+                          </button>
+                          <button
+                            onClick={() => handleDigestAction(link.sharable_id, true)}
+                            disabled={!!isSendingDigest}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-700 px-4 py-2 text-xs font-bold text-white hover:bg-green-800 disabled:opacity-60"
+                          >
+                            <Mail className="w-4 h-4" />
+                            {isSendingDigest === `${link.sharable_id}:email` ? 'Sending...' : 'Send Email'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {sortedShareLinks.length === 0 && (
+                      <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 text-sm text-gray-500">
+                        No shareable links created yet.
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

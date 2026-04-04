@@ -21,17 +21,17 @@ export const FEEDBACK_TOPICS = [
   {
     id: 'match',
     label: 'Match',
-    description: 'Tactics, team shape, result, referee calls, and game management.',
+    description: 'Match control, team shape, sportsmanship, officiating, and game management.',
   },
   {
     id: 'players',
     label: 'Players',
-    description: 'Player performance, selection, attitude, development, and injuries.',
+    description: 'Player performance, discipline, attitude, development, and welfare.',
   },
   {
     id: 'transfer',
     label: 'Transfers',
-    description: 'Signings, departures, scouting, and squad-building decisions.',
+    description: 'Signings, departures, squad planning, and whether club decisions fit the football culture.',
   },
 ];
 
