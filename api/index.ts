@@ -5,6 +5,7 @@ import { neon } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import { createRemoteJWKSet, jwtVerify, decodeJwt } from 'jose';
+import { fileURLToPath } from 'node:url';
 
 dotenv.config();
 
@@ -2629,6 +2630,24 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+const isDirectRun = (() => {
+  const entry = process.argv[1];
+  if (!entry) return false;
+
+  try {
+    return fileURLToPath(import.meta.url) === entry;
+  } catch {
+    return false;
+  }
+})();
+
+if (isDirectRun) {
+  startServer().catch((error) => {
+    console.error('Failed to start development server:', error);
+    process.exit(1);
   });
 }
 

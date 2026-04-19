@@ -11,6 +11,7 @@ export const COLORS = {
 
 export const LANGUAGES = [
   { code: 'en', name: 'English' },
+  { code: 'pcm', name: 'Pidgin' },
   { code: 'ha', name: 'Hausa' },
   { code: 'yo', name: 'Yoruba' },
   { code: 'ig', name: 'Igbo' },
@@ -21,18 +22,48 @@ export const FEEDBACK_TOPICS = [
   {
     id: 'match',
     label: 'Match',
-    description: 'Match control, team shape, sportsmanship, officiating, and game management.',
+    description: 'Match flow, officiating, fan intensity, and what needs attention.',
   },
   {
     id: 'players',
     label: 'Players',
-    description: 'Player performance, discipline, attitude, development, and welfare.',
+    description: 'Nigerian players, performance levels, effort, and development.',
   },
   {
     id: 'transfer',
     label: 'Transfers',
-    description: 'Signings, departures, squad planning, and whether club decisions fit the football culture.',
+    description: 'Club recruitment, squad moves, and what Nigerian clubs should improve.',
   },
+];
+
+export const NIGERIAN_CLUBS = [
+  'Enyimba FC',
+  'Shooting Stars SC',
+  'Rangers International',
+  'Enugu Rangers',
+  'Heartland FC',
+  'Bendel Insurance',
+  'Remo Stars',
+  'Kano Pillars',
+  'Lobi Stars',
+  'Rivers United',
+  'Sunshine Stars',
+  'Plateau United',
+  'Abia Warriors',
+  'Akwa United',
+  'Niger Tornadoes',
+  'Kwara United',
+  'Bayelsa United',
+  'El-Kanemi Warriors',
+];
+
+export const NIGERIAN_TEAMS = [
+  'Super Eagles',
+  'Super Falcons',
+  'Flying Eagles',
+  'Golden Eaglets',
+  'Olympic Eagles',
+  'CHAN Eagles',
 ];
 
 export const FOOTBALL_FOCUS_AREAS = [

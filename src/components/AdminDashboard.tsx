@@ -1,6 +1,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { Download, TrendingUp, MessageSquare, AlertCircle, X, FileText, Info, ThumbsUp, ThumbsDown, Minus, Trophy, Shield, UserX } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area, Legend } from 'recharts';
 
 interface AdminDashboardProps {
   data: any[];
@@ -35,13 +36,46 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
 
   const stats = useMemo(() => {
     const avgSentiment = filteredData.length ? filteredData.reduce((a, b) => a + b.sentiment_score, 0) / filteredData.length : 0;
+    const avgMagnitude = filteredData.length ? filteredData.reduce((a, b) => a + b.magnitude, 0) / filteredData.length : 0;
     const avgCredibility = filteredData.length ? filteredData.reduce((a, b) => a + b.credibility_score, 0) / filteredData.length : 0;
     return {
       total: filteredData.length,
       avg: avgSentiment.toFixed(2),
+      magnitude: avgMagnitude.toFixed(2),
       credibility: (avgCredibility * 100).toFixed(0),
       negative: filteredData.filter(d => d.sentiment_score < -0.2).length,
     };
+  }, [filteredData]);
+
+  const sentimentDistribution = useMemo(() => {
+    const distribution = {
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+    };
+
+    filteredData.forEach((item) => {
+      if (item.sentiment_score > 0.2) distribution.positive += 1;
+      else if (item.sentiment_score < -0.2) distribution.negative += 1;
+      else distribution.neutral += 1;
+    });
+
+    return [
+      { name: 'Positive', value: distribution.positive, fill: '#16a34a' },
+      { name: 'Neutral', value: distribution.neutral, fill: '#6b7280' },
+      { name: 'Negative', value: distribution.negative, fill: '#dc2626' },
+    ];
+  }, [filteredData]);
+
+  const feedbackTrend = useMemo(() => {
+    return [...filteredData]
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      .slice(-8)
+      .map((item, index) => ({
+        name: item.opponent?.slice(0, 12) || `Item ${index + 1}`,
+        sentiment: Number(item.sentiment_score || 0),
+        magnitude: Number(item.magnitude || 0),
+      }));
   }, [filteredData]);
 
   const getSentimentLabel = (score: number) => {
@@ -109,7 +143,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-2">
             <MessageSquare className="text-blue-500 w-5 h-5" />
@@ -133,10 +167,71 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ data, onBlockUser }) =>
         </div>
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-2">
+            <TrendingUp className="text-amber-500 w-5 h-5" />
+            <span className="text-gray-500 text-sm font-medium">Avg Magnitude</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-600">{stats.magnitude}</p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-2">
             <AlertCircle className="text-red-500 w-5 h-5" />
             <span className="text-gray-500 text-sm font-medium">Critical Issues</span>
           </div>
           <p className="text-2xl font-bold text-red-600">{stats.negative}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-gray-800">Sentiment Distribution</h3>
+            <p className="text-sm text-gray-500">See how the current filtered feedback splits across positive, neutral, and negative sentiment.</p>
+          </div>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sentimentDistribution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip cursor={{ fill: '#f3f4f6' }} />
+                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                  {sentimentDistribution.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-gray-800">Sentiment vs Magnitude Trend</h3>
+            <p className="text-sm text-gray-500">Track how fan sentiment and emotional intensity are changing across the latest filtered feedback entries.</p>
+          </div>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={feedbackTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="sentimentGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0.05} />
+                  </linearGradient>
+                  <linearGradient id="magnitudeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#6b7280', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '12px' }} />
+                <Area type="monotone" dataKey="sentiment" stroke="#16a34a" strokeWidth={3} fill="url(#sentimentGradient)" name="Sentiment" />
+                <Area type="monotone" dataKey="magnitude" stroke="#f59e0b" strokeWidth={3} fill="url(#magnitudeGradient)" name="Magnitude" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

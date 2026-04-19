@@ -317,8 +317,8 @@ export function Admin() {
   return (
     <div className="min-h-screen bg-[#F8FBF9]">
       <Seo
-        title="Admin Dashboard | NaijaPitch Intelligence"
-        description="Private club dashboard for fan feedback analysis, shareable match links, user moderation, and club intelligence."
+        title="Administrator Dashboard | Feedback Analyzer"
+        description="Private administrator dashboard for fan feedback analysis, shareable match links, user moderation, and club intelligence."
         noindex
       />
       <SignedIn>
@@ -328,13 +328,13 @@ export function Admin() {
               <div className="flex items-center gap-2">
                 {clubBadge}
                 <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
-                  NaijaPitch Intelligence
+                  Feedback Analyzer
                 </span>
               </div>
               
               <div className="hidden md:flex items-center gap-4">
                 <Link to="/" className="text-sm font-semibold text-gray-500 hover:text-green-600 transition-all">
-                  Fan Portal
+                  Fan Feedback
                 </Link>
                 <div className="h-6 w-px bg-gray-200"></div>
                 <SignedIn>
