@@ -6,6 +6,7 @@ import { ArrowRight, BarChart3, Goal, LayoutDashboard, LogOut, Menu, MessageSqua
 import FeedbackForm from '../components/FeedbackForm';
 import Seo from '../components/Seo';
 import { authClient } from '../lib/auth';
+import heroImage from '../assets/kano-pillars-enyimba-hero.jpeg';
 
 export function Home() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -232,10 +233,13 @@ export function Home() {
                   </p>
                 </div>
 
-                <div className="relative min-h-[320px] overflow-hidden bg-green-800 sm:min-h-[420px]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.28),_transparent_34%),linear-gradient(135deg,_#008751_0%,_#05603a_55%,_#064e3b_100%)]" />
-                  <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border-[32px] border-white/10" />
-                  <div className="absolute -bottom-24 left-10 h-64 w-64 rounded-full border-[42px] border-white/10" />
+                <div className="relative min-h-[320px] overflow-hidden bg-green-900 sm:min-h-[420px]">
+                  <img
+                    src={heroImage}
+                    alt="Kano Pillars and Enyimba football match"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,_rgba(6,78,59,0.08),_rgba(6,78,59,0.72)),radial-gradient(circle_at_top_left,_rgba(255,255,255,0.18),_transparent_30%)]" />
                   <div className="relative flex h-full min-h-[320px] flex-col justify-between p-6 text-white sm:min-h-[420px] sm:p-8 lg:p-10">
                     <div className="flex items-center justify-between gap-4">
                       <div className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] backdrop-blur-sm">
@@ -244,9 +248,8 @@ export function Home() {
                       <Goal className="h-10 w-10" />
                     </div>
 
-                    <div className="space-y-7">
-                      <Goal className="h-24 w-24 text-white drop-shadow-xl sm:h-32 sm:w-32" />
-                      <div className="max-w-sm space-y-3">
+                    <div className="max-w-md space-y-4 rounded-[28px] border border-white/20 bg-green-950/45 p-5 shadow-2xl shadow-green-950/30 backdrop-blur-sm">
+                      <div className="space-y-3">
                         <div className="text-[11px] font-black uppercase tracking-[0.28em] text-green-100">Fan Intensity</div>
                         <p className="text-3xl font-black leading-tight sm:text-4xl">
                           Spot what needs attention before it becomes noise.
