@@ -27,6 +27,7 @@ export function Admin() {
   const [copied, setCopied] = useState(false);
   const [activeView, setActiveView] = useState<'dashboard' | 'users' | 'approvals'>('dashboard');
   const [userData, setUserData] = useState<any>(null);
+  const [clubProfile, setClubProfile] = useState<any>(null);
   const [pendingClubs, setPendingClubs] = useState<any[]>([]);
   const [isBackfilling, setIsBackfilling] = useState(false);
   const [shareLinks, setShareLinks] = useState<any[]>([]);
@@ -53,10 +54,12 @@ export function Admin() {
   }, [session]);
 
   const clubId = userData?.club_id;
-  const clubBadge = userData?.logo_url ? (
+  const clubLogoUrl = clubProfile?.logo_url || userData?.logo_url;
+  const clubDisplayName = clubProfile?.name || userData?.club_id?.toUpperCase() || 'Assigned Club';
+  const clubBadge = clubLogoUrl ? (
     <img
-      src={userData.logo_url}
-      alt={`${userData?.club_id || 'Club'} logo`}
+      src={clubLogoUrl}
+      alt={`${clubDisplayName} logo`}
       className="w-9 h-9 rounded-xl object-cover border border-green-200 bg-white"
     />
   ) : (
@@ -64,6 +67,27 @@ export function Admin() {
       <Trophy className="w-6 h-6 text-white" />
     </div>
   );
+
+  useEffect(() => {
+    const fetchClubProfile = async () => {
+      const token = await getToken();
+      if (!session || !clubId || !token) return;
+
+      try {
+        const res = await fetch('/api/clubs/my-request', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setClubProfile(data.club || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch club profile', error);
+      }
+    };
+
+    fetchClubProfile();
+  }, [session, clubId]);
 
   useEffect(() => {
     const fetchFeedback = async () => {
@@ -404,10 +428,10 @@ export function Admin() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Intelligence Hub</h1>
               <div className="flex items-center gap-3 mt-2">
-                {userData?.logo_url ? (
+                {clubLogoUrl ? (
                   <img
-                    src={userData.logo_url}
-                    alt={`${userData?.club_id || 'Club'} logo`}
+                    src={clubLogoUrl}
+                    alt={`${clubDisplayName} logo`}
                     className="w-12 h-12 rounded-2xl object-cover border border-green-100 bg-white shadow-sm"
                   />
                 ) : (
@@ -415,7 +439,7 @@ export function Admin() {
                     <ImageIcon className="w-5 h-5" />
                   </div>
                 )}
-                <p className="text-gray-500 font-medium">Managing insights for <span className="text-green-700 font-bold">{userData?.club_id?.toUpperCase() || 'Assigned Club'}</span></p>
+                <p className="text-gray-500 font-medium">Managing insights for <span className="text-green-700 font-bold">{clubDisplayName}</span></p>
               </div>
             </div>
             

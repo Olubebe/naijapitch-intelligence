@@ -57,8 +57,8 @@ export function Home() {
 
       <header className="sticky top-0 z-50 border-b border-green-100 bg-white/90 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex h-16 items-center gap-4">
+            <div className="flex shrink-0 items-center gap-3">
               <div className="rounded-2xl bg-green-700 p-2 text-white shadow-lg shadow-green-100">
                 <Goal className="h-6 w-6" />
               </div>
@@ -68,14 +68,14 @@ export function Home() {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-4">
+            <nav className="ml-auto flex flex-1 items-center justify-end gap-3 max-md:hidden">
               <a href="#feedback-form" className="flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-green-900/10 transition-all hover:-translate-y-0.5 hover:bg-green-800">
                 <MessageSquareText className="h-4 w-4" />
-                Share Match Voice
+                <span className="whitespace-nowrap">Share Match Voice</span>
               </a>
               <Link to="/admin" className="flex items-center gap-2 rounded-xl border border-green-200 bg-white px-4 py-2.5 text-sm font-black text-green-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-50">
                 <LayoutDashboard className="h-4 w-4" />
-                Administrator Dashboard
+                <span className="whitespace-nowrap">Administrator Dashboard</span>
               </Link>
               <div className="h-6 w-px bg-gray-200" />
               {!isSignedIn ? (
@@ -109,7 +109,7 @@ export function Home() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((current) => !current)}
-              className="inline-flex md:hidden items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 p-2.5 text-gray-700 transition-all hover:bg-gray-100"
+              className="ml-auto inline-flex items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 p-2.5 text-gray-700 transition-all hover:bg-gray-100 md:hidden"
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={mobileMenuOpen}
             >

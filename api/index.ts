@@ -1911,7 +1911,7 @@ app.get('/api/clubs/my-request', authenticate, async (req, res) => {
   }
 
   const club = await sql`
-    SELECT id, name, status, submitted_at, review_due_at, reviewed_at, rejection_reason, is_active
+    SELECT id, name, npfl_id, logo_url, admin_email, status, submitted_at, review_due_at, reviewed_at, rejection_reason, is_active
     FROM clubs
     WHERE id = ${userRecord.club_id}
   `;
