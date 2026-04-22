@@ -2,12 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useAuthData } from '@neondatabase/neon-js/auth/react';
 import { UserButton } from '@neondatabase/neon-js/auth/react/ui';
-import { ArrowRight, BarChart3, LayoutDashboard, LogOut, Menu, MessageSquareText, Trophy, UserPlus, X } from 'lucide-react';
+import { ArrowRight, BarChart3, Goal, LayoutDashboard, LogOut, Menu, MessageSquareText, UserPlus, X } from 'lucide-react';
 import FeedbackForm from '../components/FeedbackForm';
 import Seo from '../components/Seo';
 import { authClient } from '../lib/auth';
-
-const crowdImage = 'https://images.unsplash.com/photo-1547347298-4074fc3086f0?auto=format&fit=crop&w=1400&q=80';
 
 export function Home() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -62,7 +60,7 @@ export function Home() {
           <div className="flex h-16 items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-green-700 p-2 text-white shadow-lg shadow-green-100">
-                <Trophy className="h-6 w-6" />
+                <Goal className="h-6 w-6" />
               </div>
               <div>
                 <div className="text-base sm:text-lg font-black tracking-tight text-gray-900">Feedback Analyzer</div>
@@ -222,30 +220,37 @@ export function Home() {
                     </a>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-[24px] border border-green-100 bg-green-50/70 p-5">
-                      <div className="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Feedback Analyzer</div>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-700">
-                        Secure feedback for the Feedback Analyzer, built for Nigerian clubs, teams, and players.
-                      </p>
-                    </div>
-                    <div className="rounded-[24px] border border-green-100 bg-green-50/70 p-5">
-                      <div className="text-[11px] font-black uppercase tracking-[0.22em] text-green-700">Fan Intensity</div>
-                      <p className="mt-3 text-sm leading-relaxed text-gray-700">
-                        We use fan intensity to spot what needs attention across clubs, teams, and player conversations.
-                      </p>
-                    </div>
-                  </div>
+                  <p className="max-w-xl text-sm font-semibold uppercase tracking-[0.18em] text-green-700">
+                    Nigerian clubs, national teams, players, and fan feedback in one place.
+                  </p>
                 </div>
 
-                <div className="relative min-h-[320px] sm:min-h-[420px] bg-green-900">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `linear-gradient(180deg, rgba(7,51,37,0.15), rgba(7,51,37,0.55)), url(${crowdImage})` }}
-                  />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.18),_transparent_32%),linear-gradient(180deg,_transparent,_rgba(7,30,22,0.72))]" />
-                  <div className="absolute left-5 top-5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-white backdrop-blur-sm">
-                    Nigerian Football
+                <div className="relative min-h-[320px] overflow-hidden bg-green-800 sm:min-h-[420px]">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.28),_transparent_34%),linear-gradient(135deg,_#008751_0%,_#05603a_55%,_#064e3b_100%)]" />
+                  <div className="absolute -right-20 -top-20 h-56 w-56 rounded-full border-[32px] border-white/10" />
+                  <div className="absolute -bottom-24 left-10 h-64 w-64 rounded-full border-[42px] border-white/10" />
+                  <div className="relative flex h-full min-h-[320px] flex-col justify-between p-6 text-white sm:min-h-[420px] sm:p-8 lg:p-10">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="rounded-full border border-white/25 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] backdrop-blur-sm">
+                        Nigerian Football
+                      </div>
+                      <Goal className="h-10 w-10" />
+                    </div>
+
+                    <div className="space-y-7">
+                      <Goal className="h-24 w-24 text-white drop-shadow-xl sm:h-32 sm:w-32" />
+                      <div className="max-w-sm space-y-3">
+                        <div className="text-[11px] font-black uppercase tracking-[0.28em] text-green-100">Fan Intensity</div>
+                        <p className="text-3xl font-black leading-tight sm:text-4xl">
+                          Spot what needs attention before it becomes noise.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs font-black uppercase tracking-[0.16em]">
+                        <span className="rounded-full border border-white/25 bg-white/10 px-3 py-2">Clubs</span>
+                        <span className="rounded-full border border-white/25 bg-white/10 px-3 py-2">Teams</span>
+                        <span className="rounded-full border border-white/25 bg-white/10 px-3 py-2">Players</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,7 +265,7 @@ export function Home() {
 
       <footer className="border-t border-green-100 bg-white py-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-between gap-4 px-4 text-sm text-gray-500 md:flex-row">
-          <p>© 2026 Feedback Fan Analyzer. Gingering Nigerian Football.</p>
+          <p>(c) 2026 Feedback Fan Analyzer. Gingering Nigerian Football.</p>
           <div className="flex gap-6">
             <a href="#" className="transition-colors hover:text-green-700">Privacy</a>
             <a href="#" className="transition-colors hover:text-green-700">Policies</a>

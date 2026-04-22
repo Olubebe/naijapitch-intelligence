@@ -6,7 +6,7 @@ import {
   Loader2,
   Globe,
   ShieldCheck,
-  Trophy,
+  Goal,
   User,
   UserCheck,
   AlertTriangle,
@@ -164,7 +164,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ matchContext }) => {
           <div className="space-y-4">
             <div>
               <label className="mb-3 flex items-center gap-1 text-sm font-medium text-gray-700">
-                <Sparkles className="w-4 h-4 text-green-600" /> What part of football are you speaking about?
+                <Sparkles className="w-4 h-4 text-green-600" /> Choose the football area for this feedback
               </label>
               <div className="grid grid-cols-1 gap-3">
                 {FEEDBACK_TOPICS.map((topic) => (
@@ -187,7 +187,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ matchContext }) => {
 
             <div>
               <label className="mb-2 flex items-center gap-1 text-sm font-medium text-gray-700">
-                <Trophy className="w-4 h-4 text-green-600" /> Clubs and Teams
+                <Goal className="w-4 h-4 text-green-600" /> Clubs and Teams
               </label>
               <select
                 required
@@ -196,14 +196,14 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ matchContext }) => {
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Select a club or team</option>
-                <optgroup label="Nigerian Clubs">
+                <optgroup label="Nigerian Clubs (club sides)">
                   {NIGERIAN_CLUBS.map((club) => (
                     <option key={club} value={club}>
                       {club}
                     </option>
                   ))}
                 </optgroup>
-                <optgroup label="Nigerian Teams">
+                <optgroup label="Nigerian National Teams">
                   {NIGERIAN_TEAMS.map((team) => (
                     <option key={team} value={team}>
                       {team}

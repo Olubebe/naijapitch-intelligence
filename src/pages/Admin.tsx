@@ -415,7 +415,7 @@ export function Admin() {
                     <ImageIcon className="w-5 h-5" />
                   </div>
                 )}
-                <p className="text-gray-500 font-medium">Managing insights for <span className="text-green-700 font-bold">{userData?.club_id?.toUpperCase() || 'Official Club'}</span></p>
+                <p className="text-gray-500 font-medium">Managing insights for <span className="text-green-700 font-bold">{userData?.club_id?.toUpperCase() || 'Assigned Club'}</span></p>
               </div>
             </div>
             

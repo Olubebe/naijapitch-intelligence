@@ -21,17 +21,17 @@ export const LANGUAGES = [
 export const FEEDBACK_TOPICS = [
   {
     id: 'match',
-    label: 'Match',
-    description: 'Match flow, officiating, fan intensity, and what needs attention.',
+    label: 'Clubs & Teams',
+    description: 'Club and team performance, fan intensity, and what needs attention.',
   },
   {
     id: 'players',
-    label: 'Players',
-    description: 'Nigerian players, performance levels, effort, and development.',
+    label: 'Nigerian Players',
+    description: 'Player performance, contribution, effort, and development.',
   },
   {
     id: 'transfer',
-    label: 'Transfers',
+    label: 'Club Decisions',
     description: 'Club recruitment, squad moves, and what Nigerian clubs should improve.',
   },
 ];
