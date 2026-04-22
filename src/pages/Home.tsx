@@ -69,11 +69,11 @@ export function Home() {
             </div>
 
             <nav className="hidden md:flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700">
+              <a href="#feedback-form" className="flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-green-900/10 transition-all hover:-translate-y-0.5 hover:bg-green-800">
                 <MessageSquareText className="h-4 w-4" />
-                Fan Feedback
-              </Link>
-              <Link to="/admin" className="flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-gray-600 transition-all hover:bg-green-50 hover:text-green-700">
+                Share Match Voice
+              </a>
+              <Link to="/admin" className="flex items-center gap-2 rounded-xl border border-green-200 bg-white px-4 py-2.5 text-sm font-black text-green-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-50">
                 <LayoutDashboard className="h-4 w-4" />
                 Administrator Dashboard
               </Link>
@@ -210,14 +210,21 @@ export function Home() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative z-10 flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
                     <a
                       href="#feedback-form"
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-700 px-6 py-4 text-base font-black text-white transition-all hover:bg-green-800"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-700 px-7 py-4 text-base font-black text-white shadow-xl shadow-green-900/15 transition-all hover:-translate-y-0.5 hover:bg-green-800"
                     >
                       Share Match Voice
                       <ArrowRight className="h-4 w-4" />
                     </a>
+                    <Link
+                      to="/admin"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-green-200 bg-white px-7 py-4 text-base font-black text-green-800 shadow-sm transition-all hover:-translate-y-0.5 hover:border-green-400 hover:bg-green-50"
+                    >
+                      Administrator Dashboard
+                      <LayoutDashboard className="h-4 w-4" />
+                    </Link>
                   </div>
 
                   <p className="max-w-xl text-sm font-semibold uppercase tracking-[0.18em] text-green-700">
