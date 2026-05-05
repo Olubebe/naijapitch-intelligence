@@ -154,7 +154,7 @@ export function Admin() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ clubId, opponent, topicType, subheading, audience, expiresInHours })
+        body: JSON.stringify({ clubId, opponent, topicType, subheading, subtitle: subheading, audience, expiresInHours })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -537,7 +537,7 @@ export function Admin() {
                             </td>
                             <td className="px-8 py-6">
                               <div className="text-sm font-semibold text-gray-800">{link.topic_type}</div>
-                              <div className="text-xs text-amber-700">{link.subheading}</div>
+                              <div className="whitespace-pre-line text-xs leading-relaxed text-amber-700">{link.subtitle || link.subheading}</div>
                             </td>
                             <td className="px-8 py-6 text-sm font-bold text-gray-900">{link.feedback_count}</td>
                             <td className="px-8 py-6">
@@ -594,7 +594,7 @@ export function Admin() {
                           <div>
                             <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Topic</div>
                             <div className="mt-1 font-semibold text-gray-800">{link.topic_type}</div>
-                            <div className="text-xs text-amber-700">{link.subheading}</div>
+                            <div className="whitespace-pre-line text-xs leading-relaxed text-amber-700">{link.subtitle || link.subheading}</div>
                           </div>
                           <div>
                             <div className="text-[10px] font-black uppercase tracking-widest text-gray-400">Responses</div>
@@ -764,27 +764,30 @@ export function Admin() {
 
         {/* Link Generator Modal */}
         {showLinkGen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 border border-gray-100">
-              <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-700 p-2 rounded-xl text-white"><LinkIcon className="w-5 h-5" /></div>
-                  <h2 className="text-xl font-bold text-gray-900">Match Link Generator</h2>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-md animate-in fade-in duration-300 sm:p-4">
+            <div className="w-full max-w-2xl rounded-3xl border border-gray-100 bg-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 p-5 sm:p-6">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="shrink-0 rounded-xl bg-green-700 p-2 text-white"><LinkIcon className="w-5 h-5" /></div>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold text-gray-950">Generate Feedback Link</h2>
+                    <p className="mt-1 text-sm leading-relaxed text-gray-600">Create a campaign link fans can use to submit focused feedback.</p>
+                  </div>
                 </div>
-                <button onClick={() => { setShowLinkGen(false); setGeneratedLink(''); setGeneratedMeta(null); }} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-all">
+                <button onClick={() => { setShowLinkGen(false); setGeneratedLink(''); setGeneratedMeta(null); }} className="shrink-0 rounded-full p-2 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600" aria-label="Close link generator">
                   <Plus className="w-6 h-6 rotate-45" />
                 </button>
               </div>
               
               {!generatedLink ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-5 p-5 sm:p-6">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Topic</label>
+                      <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest">Topic</label>
                       <select
                         value={topicType}
                         onChange={(e) => setTopicType(e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-gray-800 outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100"
                       >
                         <option value="match">Match</option>
                         <option value="players">Players</option>
@@ -792,11 +795,11 @@ export function Admin() {
                       </select>
                     </div>
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Audience</label>
+                      <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest">Audience</label>
                       <select
                         value={audience}
                         onChange={(e) => setAudience(e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-gray-800 outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100"
                       >
                         <option value="ANY">Anonymous + Authenticated</option>
                         <option value="AUTHENTICATED">Authenticated only</option>
@@ -805,56 +808,57 @@ export function Admin() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject</label>
+                    <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest">Subject</label>
                     <input 
                       type="text"
                       value={opponent}
                       onChange={(e) => setOpponent(e.target.value)}
-                      placeholder="e.g. Chelsea vs Arsenal or Summer Transfer Window"
-                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                      placeholder="e.g. National Sports Commission - My Top Three Super Eagles Players Campaign"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-gray-800 outline-none transition-all placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Subheading</label>
-                    <input 
-                      type="text"
+                    <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest">Subtitle</label>
+                    <textarea
                       value={subheading}
                       onChange={(e) => setSubheading(e.target.value)}
-                      placeholder="e.g. Match, Players, Transfer"
-                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                      rows={4}
+                      placeholder="Describe what this campaign is asking fans to respond to, the context they should consider, or the exact question you want answered."
+                      className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium leading-relaxed text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-100"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Expires In (Hours)</label>
+                    <label className="block text-[10px] font-black text-gray-600 uppercase tracking-widest">Expires In (Hours)</label>
                     <input 
                       type="number"
-                      min={1}
+                      min={0}
                       max={168}
                       value={expiresInHours}
                       onChange={(e) => setExpiresInHours(Number(e.target.value))}
                       placeholder="48"
-                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-gray-800 outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100"
                     />
+                    <p className="text-xs font-medium text-gray-500">Use 0 for no expiry.</p>
                   </div>
                   <button 
                     onClick={handleCreateLink}
                     disabled={!opponent}
-                    className="w-full bg-green-700 text-white font-black py-4 rounded-2xl hover:bg-green-800 transition-all disabled:bg-gray-200 shadow-xl shadow-green-100 flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-green-700 py-4 font-black text-white shadow-xl shadow-green-100 transition-all hover:bg-green-800 disabled:bg-gray-200 disabled:text-gray-500 disabled:shadow-none"
                   >
-                    Generate Sharable Link <ArrowRight className="w-4 h-4" />
+                    Generate Shareable Link <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6 animate-in zoom-in duration-300">
-                  <div className="p-6 bg-green-50 border border-green-100 rounded-2xl">
+                <div className="space-y-5 p-5 animate-in zoom-in duration-300 sm:p-6">
+                  <div className="rounded-2xl border border-green-100 bg-green-50 p-4 sm:p-5">
                     <p className="text-[10px] text-green-700 font-black uppercase tracking-widest mb-2">Link Ready for Fans</p>
-                    <p className="text-sm text-gray-700 font-mono break-all bg-white/50 p-3 rounded-lg border border-green-200/50">{generatedLink}</p>
+                    <p className="break-all rounded-xl border border-green-200/70 bg-white p-3 font-mono text-sm leading-relaxed text-gray-700">{generatedLink}</p>
                     {generatedMeta && (
-                      <div className="mt-4 space-y-1 text-xs text-green-800">
-                        <p>Topic: {generatedMeta.topicType}</p>
-                        <p>Subheading: {generatedMeta.subheading}</p>
-                        <p>Audience: {generatedMeta.audience}</p>
-                        <p>Expires: {new Date(generatedMeta.expiresAt).toLocaleString()}</p>
+                      <div className="mt-4 grid grid-cols-1 gap-2 text-xs text-green-800 sm:grid-cols-2">
+                        <p className="rounded-lg bg-white/60 px-3 py-2">Topic: <span className="font-bold">{generatedMeta.topicType}</span></p>
+                        <p className="rounded-lg bg-white/60 px-3 py-2">Audience: <span className="font-bold">{generatedMeta.audience}</span></p>
+                        <p className="rounded-lg bg-white/60 px-3 py-2 sm:col-span-2">Subtitle: <span className="whitespace-pre-line font-bold">{generatedMeta.subtitle || generatedMeta.subheading || 'General'}</span></p>
+                        <p className="rounded-lg bg-white/60 px-3 py-2">Expires: <span className="font-bold">{generatedMeta.expiresAt ? new Date(generatedMeta.expiresAt).toLocaleString() : 'No expiry'}</span></p>
                       </div>
                     )}
                   </div>

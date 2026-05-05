@@ -131,6 +131,18 @@ function sanitizeText(value: unknown, maxLength = 255) {
   return value.trim().replace(/\s+/g, ' ').slice(0, maxLength);
 }
 
+function sanitizeCampaignDetail(value: unknown, maxLength = 900) {
+  if (typeof value !== 'string') return '';
+  return value
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.trim().replace(/[ \t]+/g, ' '))
+    .filter(Boolean)
+    .join('\n')
+    .slice(0, maxLength)
+    .trim();
+}
+
 function sanitizeOptionalUrl(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) return null;
   if (value.startsWith('data:image/')) {
@@ -1163,6 +1175,11 @@ function getReviewDueAt() {
 }
 
 function getLinkExpiry(hours?: number) {
+  const parsedHours = Number(hours);
+  if (Number.isFinite(parsedHours) && parsedHours <= 0) {
+    return null;
+  }
+
   const safeHours = Math.max(1, Math.min(Number(hours || DEFAULT_LINK_EXPIRY_HOURS), 168));
   return new Date(Date.now() + safeHours * 60 * 60 * 1000);
 }
@@ -1415,6 +1432,7 @@ async function initDb() {
         sharable_id TEXT UNIQUE,
         topic_type TEXT DEFAULT 'match',
         subheading TEXT,
+        subtitle TEXT,
         expires_at TIMESTAMP WITH TIME ZONE,
         created_by TEXT,
         audience TEXT DEFAULT 'ANY'
@@ -1422,6 +1440,7 @@ async function initDb() {
     `;
     await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS topic_type TEXT DEFAULT 'match'`;
     await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS subheading TEXT`;
+    await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS subtitle TEXT`;
     await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE`;
     await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS created_by TEXT`;
     await sql`ALTER TABLE matches ADD COLUMN IF NOT EXISTS audience TEXT DEFAULT 'ANY'`;
@@ -2229,6 +2248,7 @@ app.get('/api/admin/links', authenticate, async (req, res) => {
         m.sharable_id,
         m.topic_type,
         m.subheading,
+        m.subtitle,
         m.expires_at,
         m.audience,
         m.match_date,
@@ -2289,6 +2309,7 @@ app.get('/api/admin/links/:sharableId/feedback', authenticate, async (req, res) 
         opponent: match.opponent,
         topicType: match.topic_type,
         subheading: match.subheading,
+        subtitle: match.subtitle,
         clubName: match.club_name,
         adminEmail: match.admin_email,
       },
@@ -2386,6 +2407,7 @@ app.post('/api/admin/links/:sharableId/summary', authenticate, async (req, res) 
         opponent: match.opponent,
         topicType: match.topic_type,
         subheading: match.subheading,
+        subtitle: match.subtitle,
         clubName: match.club_name,
         adminEmail: match.admin_email,
       },
@@ -2582,6 +2604,7 @@ app.post('/api/admin/links', rateLimit({
   const opponent = sanitizeText(req.body.opponent, 120);
   const topicType = normalizeTopicType(req.body.topicType);
   const subheading = normalizeSubheadingForTopic(topicType, req.body.subheading);
+  const subtitle = sanitizeCampaignDetail(req.body.subtitle || req.body.subheading, 900);
   const audience = getAudience(req.body.audience);
   const expiresAt = getLinkExpiry(req.body.expiresInHours);
 
@@ -2606,10 +2629,10 @@ app.post('/api/admin/links', rateLimit({
   
   try {
     await sql`
-      INSERT INTO matches (id, club_id, opponent, sharable_id, topic_type, subheading, expires_at, created_by, audience)
-      VALUES (${id}, ${clubId}, ${opponent}, ${sharableId}, ${topicType}, ${subheading}, ${expiresAt}, ${adminUser.id}, ${audience})
+      INSERT INTO matches (id, club_id, opponent, sharable_id, topic_type, subheading, subtitle, expires_at, created_by, audience)
+      VALUES (${id}, ${clubId}, ${opponent}, ${sharableId}, ${topicType}, ${subheading}, ${subtitle}, ${expiresAt}, ${adminUser.id}, ${audience})
     `;
-    res.json({ id, sharableId, expiresAt: expiresAt.toISOString(), topicType, subheading, audience });
+    res.json({ id, sharableId, expiresAt: expiresAt?.toISOString() || null, topicType, subheading, subtitle, audience });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create link' });
   }
