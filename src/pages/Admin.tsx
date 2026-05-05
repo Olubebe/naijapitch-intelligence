@@ -4,12 +4,13 @@ import { SignedIn, SignedOut, UserButton } from '@neondatabase/neon-js/auth/reac
 import { useAuthData } from '@neondatabase/neon-js/auth/react';
 import AdminDashboard from '../components/AdminDashboard';
 import HybridFeedbackReportBuilder from '../components/HybridFeedbackReportBuilder';
-import { Trophy, LogOut, LayoutDashboard, Plus, Link as LinkIcon, Copy, Check, Users, Ban, ArrowRight, CheckCircle2, Image as ImageIcon, Mail, FileText, X, Menu } from 'lucide-react';
+import { LogOut, LayoutDashboard, Plus, Link as LinkIcon, Copy, Check, Users, Ban, ArrowRight, CheckCircle2, Image as ImageIcon, Mail, FileText, X, Menu } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { authClient, getAuthToken } from '../lib/auth';
 import Seo from '../components/Seo';
+import logoImage from '../assets/logo.jpeg';
 
 export function Admin() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -56,17 +57,6 @@ export function Admin() {
   const clubId = userData?.club_id;
   const clubLogoUrl = clubProfile?.logo_url || userData?.logo_url;
   const clubDisplayName = clubProfile?.name || userData?.club_id?.toUpperCase() || 'Assigned Club';
-  const clubBadge = clubLogoUrl ? (
-    <img
-      src={clubLogoUrl}
-      alt={`${clubDisplayName} logo`}
-      className="w-9 h-9 rounded-xl object-cover border border-green-200 bg-white"
-    />
-  ) : (
-    <div className="bg-green-700 p-1.5 rounded-lg">
-      <Trophy className="w-6 h-6 text-white" />
-    </div>
-  );
 
   useEffect(() => {
     const fetchClubProfile = async () => {
@@ -350,7 +340,11 @@ export function Admin() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16 gap-4">
               <div className="flex items-center gap-2">
-                {clubBadge}
+                <img
+                  src={logoImage}
+                  alt="Feedback Analyzer logo"
+                  className="w-9 h-9 rounded-xl object-cover border border-green-100 bg-white shadow-sm"
+                />
                 <span className="text-base sm:text-xl font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
                   Feedback Analyzer
                 </span>

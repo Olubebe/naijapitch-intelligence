@@ -19,6 +19,7 @@ import FeedbackForm from "../components/FeedbackForm";
 import Seo from "../components/Seo";
 import { authClient } from "../lib/auth";
 import heroImage from "../assets/kano-pillars-enyimba-hero.jpeg";
+import logoImage from "../assets/logo.jpeg";
 
 export function Home() {
   const { data: session } = useAuthData({
@@ -108,9 +109,11 @@ export function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center gap-4">
             <div className="flex shrink-0 items-center gap-3">
-              <div className="rounded-2xl bg-green-700 p-2 text-white shadow-lg shadow-green-100">
-                <Goal className="h-6 w-6" />
-              </div>
+              <img
+                src={logoImage}
+                alt="Feedback Analyzer logo"
+                className="h-11 w-11 rounded-2xl border border-green-100 bg-white object-cover shadow-lg shadow-green-100"
+              />
               <div>
                 <div className="text-base sm:text-lg font-black tracking-tight text-gray-900">
                   Feedback Analyzer
@@ -122,27 +125,6 @@ export function Home() {
             </div>
 
             <nav className="ml-auto flex flex-1 items-center justify-end gap-3 max-md:hidden">
-              {matchInfo ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFeedbackStep(1);
-                    setFeedbackModalOpen(true);
-                  }}
-                  className="flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-green-900/10 transition-all hover:-translate-y-0.5 hover:bg-green-800"
-                >
-                  <MessageSquareText className="h-4 w-4" />
-                  <span className="whitespace-nowrap">Submit Feedback</span>
-                </button>
-              ) : (
-                <a
-                  href="#feedback-form"
-                  className="flex items-center gap-2 rounded-xl bg-green-700 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-green-900/10 transition-all hover:-translate-y-0.5 hover:bg-green-800"
-                >
-                  <MessageSquareText className="h-4 w-4" />
-                  <span className="whitespace-nowrap">Share Match Voice</span>
-                </a>
-              )}
               <Link
                 to="/admin"
                 className="flex items-center gap-2 rounded-xl border border-green-200 bg-white px-4 py-2.5 text-sm font-black text-green-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-green-50"
@@ -206,29 +188,6 @@ export function Home() {
             <div className="md:hidden pb-4 animate-fade-up">
               <div className="rounded-[28px] border border-gray-100 bg-gray-50 p-3 shadow-sm">
                 <div className="grid gap-2">
-                  {matchInfo ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setFeedbackStep(1);
-                        setFeedbackModalOpen(true);
-                      }}
-                      className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-left text-sm font-semibold text-green-700"
-                    >
-                      <MessageSquareText className="h-4 w-4" />
-                      Submit Feedback
-                    </button>
-                  ) : (
-                    <Link
-                      to="/"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700"
-                    >
-                      <MessageSquareText className="h-4 w-4" />
-                      Fan Feedback
-                    </Link>
-                  )}
                   <Link
                     to="/admin"
                     onClick={() => setMobileMenuOpen(false)}

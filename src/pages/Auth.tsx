@@ -1,8 +1,9 @@
 import React from 'react';
 import { AuthView } from '@neondatabase/neon-js/auth/react/ui';
 import { Link, useLocation } from 'react-router-dom';
-import { Trophy, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Seo from '../components/Seo';
+import logoImage from '../assets/logo.jpeg';
 
 function resolveAuthPath(pathname: string) {
     const slug = pathname.split('/').filter(Boolean).pop() || 'signin';
@@ -54,9 +55,11 @@ export function Auth() {
             <main className="flex-grow flex items-center justify-center p-4">
                 <div className="w-full max-w-md">
                     <div className="text-center mb-8">
-                        <div className="bg-green-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-green-100 mb-4">
-                            <Trophy className="w-8 h-8 text-white" />
-                        </div>
+                        <img
+                            src={logoImage}
+                            alt="Feedback Analyzer logo"
+                            className="w-16 h-16 rounded-2xl object-cover mx-auto shadow-xl shadow-green-100 mb-4 border border-green-100 bg-white"
+                        />
                         <h1 className="text-3xl font-bold text-gray-900">Member Access</h1>
                         <p className="text-gray-500">Secure sign-in for the NaijaPitch community.</p>
                     </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { AccountView, SignedIn, SignedOut } from '@neondatabase/neon-js/auth/react/ui';
-import { Trophy, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Seo from '../components/Seo';
+import logoImage from '../assets/logo.jpeg';
 
 export function Account() {
     return (
@@ -16,10 +17,12 @@ export function Account() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <Link to="/" className="flex items-center gap-2">
-                            <div className="bg-green-700 p-1.5 rounded-lg">
-                                <Trophy className="w-6 h-6 text-white" />
-                            </div>
-                            <span className="text-xl font-bold text-gray-900">NaijaPitch</span>
+                            <img
+                                src={logoImage}
+                                alt="Feedback Analyzer logo"
+                                className="w-9 h-9 rounded-xl object-cover border border-green-100 bg-white shadow-sm"
+                            />
+                            <span className="text-xl font-bold text-gray-900">Feedback Analyzer</span>
                         </Link>
 
                         <Link to="/" className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-green-700">

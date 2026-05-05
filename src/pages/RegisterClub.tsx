@@ -2,11 +2,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuthData } from '@neondatabase/neon-js/auth/react';
 import { authClient, getAuthToken } from '../lib/auth';
-import { Trophy, Building2, ShieldCheck, Upload, ArrowRight, CheckCircle2, LogOut, Image as ImageIcon } from 'lucide-react';
+import { Building2, ShieldCheck, Upload, ArrowRight, CheckCircle2, LogOut, Image as ImageIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { SignedIn, UserButton } from '@neondatabase/neon-js/auth/react/ui';
 import Seo from '../components/Seo';
+import logoImage from '../assets/logo.jpeg';
 
 export function RegisterClub() {
   const { data: session } = useAuthData({ queryFn: () => authClient.getSession() });
@@ -130,9 +131,11 @@ export function RegisterClub() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="max-w-md w-full text-center space-y-6">
-          <div className="bg-green-700 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-green-100">
-            <Trophy className="w-8 h-8 text-white" />
-          </div>
+          <img
+            src={logoImage}
+            alt="Feedback Analyzer logo"
+            className="w-16 h-16 rounded-2xl object-cover mx-auto shadow-xl shadow-green-100 border border-green-100 bg-white"
+          />
           <h1 className="text-3xl font-bold text-gray-900">Admin Registration</h1>
           <p className="text-gray-500">Please sign in first to register your football club.</p>
           <Link 
@@ -157,11 +160,13 @@ export function RegisterClub() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
-              <div className="bg-green-700 p-1.5 rounded-lg">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
+              <img
+                src={logoImage}
+                alt="Feedback Analyzer logo"
+                className="w-9 h-9 rounded-xl object-cover border border-green-100 bg-white shadow-sm"
+              />
               <span className="text-xl font-bold bg-gradient-to-r from-green-800 to-green-600 bg-clip-text text-transparent">
-                NaijaPitch Intelligence
+                Feedback Analyzer
               </span>
             </div>
             
