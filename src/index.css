@@ -95,3 +95,21 @@ body {
 .animate-modal-rise {
   animation: modal-rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
+
+[role="dialog"] [role="listbox"],
+[role="dialog"] [data-radix-select-content],
+[role="dialog"] .react-select__menu,
+[role="dialog"] .country-list,
+[role="dialog"] .country-dropdown,
+[role="dialog"] .PhoneInputCountrySelect,
+[role="dialog"] .PhoneInputCountrySelectDropdown {
+  z-index: 9999;
+  max-height: min(18rem, calc(100vh - 12rem));
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+[role="dialog"] [data-radix-popper-content-wrapper] {
+  z-index: 9999 !important;
+}

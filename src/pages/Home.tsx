@@ -272,7 +272,7 @@ export function Home() {
                       <button
                         type="button"
                         onClick={() => {
-                          setFeedbackStep(1);
+                          setFeedbackStep(2);
                           setFeedbackModalOpen(true);
                         }}
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-700 px-6 py-4 text-sm font-black text-white shadow-xl shadow-green-900/15 transition-all hover:-translate-y-0.5 hover:bg-green-800 sm:px-7 sm:text-base"

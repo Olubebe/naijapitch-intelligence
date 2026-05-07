@@ -108,7 +108,6 @@ const FeedbackForm: React.FC<FeedbackFormProps> = ({ matchContext }) => {
       setIsSubmitting(false);
     }
   };
-  console.log("Available focus areas for topic type:", matchContext);
   if (submitted) {
     return (
       <div className="rounded-[26px] border border-green-100 bg-white p-8 text-center shadow-sm animate-in fade-in zoom-in duration-300">
