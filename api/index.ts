@@ -323,6 +323,29 @@ function inferFootballRelevance(lowerText: string) {
     'striker',
     'midfielder',
     'goalkeeper',
+    'team',
+    'ball',
+    'fans',
+    'kwallo',
+    'kwallon kafa',
+    'wasa',
+    'taka leda',
+    'dan wasa',
+    'yan wasa',
+    'koci',
+    'mai horarwa',
+    'raga',
+    'alkali',
+    'magoya baya',
+    'kungiya',
+    'filin wasa',
+    'gasa',
+    'gasar',
+    'nasara',
+    'kashi',
+    'bugun daga kai sai mai tsaron gida',
+    'boolu',
+    'agbaboolu',
   ];
 
   return footballKeywords.some((keyword) => lowerText.includes(keyword));
@@ -1596,6 +1619,10 @@ async function analyzeFeedback(text: string, language: string) {
     const translatedLowerText = translation.translatedText.toLowerCase();
     const isFootballRelated =
       heuristicFootballRelated || inferFootballRelevance(translatedLowerText);
+    if (isFootballRelated) {
+      const index = qualityFlags.indexOf('NON_FOOTBALL_TOPIC');
+      if (index >= 0) qualityFlags.splice(index, 1);
+    }
     const category = inferFeedbackCategory(translatedLowerText);
     const languageAnalysis = await analyzeNaturalLanguageText(
       translation.translatedText,
