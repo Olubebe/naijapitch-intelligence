@@ -55,6 +55,7 @@ export const NIGERIAN_CLUBS = [
   'Kwara United',
   'Bayelsa United',
   'El-Kanemi Warriors',
+  'National Sports Commission',
 ];
 
 export const NIGERIAN_TEAMS = [

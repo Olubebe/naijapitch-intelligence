@@ -1524,6 +1524,7 @@ async function initDb() {
         ('arsenal', 'Arsenal FC', 'arsenal fc', 'arsenal@example.com', 'NPFL-ARS-001', 'APPROVED', TRUE),
         ('chelsea', 'Chelsea FC', 'chelsea fc', 'chelsea@example.com', 'NPFL-CHE-002', 'APPROVED', TRUE),
         ('enyimba', 'Enyimba FC', 'enyimba fc', 'enyimba@example.com', 'NPFL-ENY-003', 'APPROVED', TRUE),
+        ('national-sports-commission', 'National Sports Commission', 'national sports commission', 'nsc@example.com', 'NSC-001', 'APPROVED', TRUE),
         ('super-eagles', 'Nigeria Super Eagles', 'nigeria super eagles', 'faitholuwibe@gmail.com', 'NPFL-NGA-000', 'APPROVED', TRUE)
       `;
     }
